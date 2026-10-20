@@ -103,6 +103,16 @@ It looks the same and costs more. The journal says
 `matrix rain: shader unavailable, falling back to the CPU renderer` when that
 happens.
 
+The shader ships compiled (`rain.frag.qsb`), because Qt 6 cannot load GLSL
+source. On every push, CI rebuilds it from `rain.frag` with a pinned `qsb` and
+fails unless the bytes match the committed file exactly. On `main` it also
+signs a build-provenance attestation for those bytes, which you can check
+against your copy:
+
+```bash
+gh attestation verify rain.frag.qsb --repo nzkritik/omarchy-matrix-rain
+```
+
 ### Rain *on* the lock screen
 
 Making the lock screen itself draw rain — as opposed to pausing the wallpaper
@@ -187,7 +197,7 @@ rm -rf ~/.local/state/omarchy-matrix-rain
 | `Service.qml` | The bottom-layer overlay, the background watcher, preview upkeep, and the `matrix-rain` IPC target |
 | `MatrixRain.qml` | The rain: picks the GPU renderer, or the CPU one when there is no GPU scene graph or the shader fails |
 | `MatrixRainGpu.qml`, `rain.frag` | The GPU renderer: a glyph atlas and one fragment shader with the head/body/tail gradient off `Color.accent` |
-| `rain.frag.qsb` | `rain.frag` compiled for Qt 6, which only loads precompiled shaders. `tools/build-shaders.sh` rebuilds it, byte for byte |
+| `rain.frag.qsb` | `rain.frag` compiled for Qt 6, which only loads precompiled shaders. `tools/build-shaders.sh` rebuilds it, byte for byte, and CI checks that on every push |
 | `MatrixRainCpu.qml` | The CPU fallback: falling columns of text items |
 | `bin/omarchy-matrix-preview` | Writes and tints the picker entry, for the current theme or every installed one (`--all`) |
 
